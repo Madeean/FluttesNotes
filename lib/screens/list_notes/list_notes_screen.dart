@@ -35,6 +35,7 @@ class _PageState extends State<Page> {
     } else {
       pageCount = 3;
     }
+    context.read<ListNotesCubit>().setPageCount(pageCount);
     return Scaffold(
       body: switch (pageCount) {
         == 1 => ListNotesPage(),
@@ -42,6 +43,18 @@ class _PageState extends State<Page> {
         == 3 => ListNotesDetailEditPage(),
         _ => ListNotesPage(),
       },
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).pushNamed(
+            EditNoteScreen.route,
+            arguments: {
+              'cubit': context.read<ListNotesCubit>(),
+              'isAddMode': true,
+            },
+          );
+        },
+        child: Icon(Icons.add),
+      ),
     );
   }
 }
@@ -53,11 +66,34 @@ class ListNotesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ListNotesCubit, ListNotesState>(
       builder: (context, state) {
-
+        final cubit = context.read<ListNotesCubit>();
         return Container(
           child: ListView.builder(
             itemBuilder: (context, index) {
-              return Text("$index");
+              var item = state.notes[index];
+              return Card(
+                margin: EdgeInsets.only(left: 16, right: 16, top: 16),
+                child: ListTile(
+                  onTap: () {
+                    cubit.setSelectedIdc(index);
+                    if (state.pageCount == 1) {
+                      Navigator.pushNamed(
+                        context,
+                        NoteDetailScreen.route,
+                        arguments: {'cubit': cubit},
+                      );
+                    }
+                  },
+                  title: Text(item.title),
+                  subtitle: Text(item.dateTime.toString()),
+                  trailing: IconButton(
+                    onPressed: () {
+                      cubit.removeNote(index);
+                    },
+                    icon: Icon(Icons.delete),
+                  ),
+                ),
+              );
             },
             itemCount: state.notes.length,
           ),
