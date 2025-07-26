@@ -1,9 +1,7 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_demo/routes.dart';
-import 'package:flutter_demo/screens/login/login_screen.dart';
+import 'package:flutter_demo/screens/testing/TestingScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SimpleBlocObserver extends BlocObserver {
   const SimpleBlocObserver();
@@ -28,11 +26,13 @@ class SimpleBlocObserver extends BlocObserver {
 
   @override
   void onTransition(
-      Bloc<dynamic, dynamic> bloc,
-      Transition<dynamic, dynamic> transition,
-      ) {
+    Bloc<dynamic, dynamic> bloc,
+    Transition<dynamic, dynamic> transition,
+  ) {
     super.onTransition(bloc, transition);
-    print('onTransition  -- bloc: ${bloc.runtimeType}, transition: $transition');
+    print(
+      'onTransition  -- bloc: ${bloc.runtimeType}, transition: $transition',
+    );
   }
 
   @override
@@ -48,32 +48,39 @@ class SimpleBlocObserver extends BlocObserver {
   }
 }
 
-void main() {
-  Bloc.observer = const SimpleBlocObserver();
-  runApp(const MyApp());
+void main() async {
+  // Bloc.observer = const SimpleBlocObserver();
+  WidgetsFlutterBinding.ensureInitialized();
+  var sharedPreferences = await SharedPreferences.getInstance();
+  runApp(
+    BlocProvider(
+      create: (context) => CounterCubit(sharedPreferences),
+      child: MaterialApp(home: SafeArea(child: Testingscreen())),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      scrollBehavior: MaterialScrollBehavior().copyWith(
-        dragDevices: {
-          PointerDeviceKind.touch,
-          PointerDeviceKind.trackpad,
-          PointerDeviceKind.mouse,
-        },
-      ),
-      onGenerateRoute: mainRoute,
-      initialRoute: LoginScreen.route,
-      home: SafeArea(child: Scaffold(body: Center())),
-    );
-  }
-}
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+//
+//   // This widget is the root of your application.
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       scrollBehavior: MaterialScrollBehavior().copyWith(
+//         dragDevices: {
+//           PointerDeviceKind.touch,
+//           PointerDeviceKind.trackpad,
+//           PointerDeviceKind.mouse,
+//         },
+//       ),
+//       onGenerateRoute: mainRoute,
+//       initialRoute: Testingscreen.route,
+//       home: SafeArea(child: Scaffold(body: Center())),
+//     );
+//   }
+// }
 
 // class TabBarBody extends StatelessWidget {
 //   const TabBarBody({super.key});

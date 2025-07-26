@@ -5,26 +5,47 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'dart:math';
 
-import 'package:flutter_demo/main.dart';
+import 'package:flutter_demo/screens/testing/TestingScreen.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class MockPref extends Mock implements SharedPreferences {}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('Test Counter', () {
+    late SharedPreferences pref;
+    late Counter counter;
+    setUp(() {
+      pref = MockPref();
+      counter = Counter(pref);
+      when(
+        () => pref.setInt(any(), any()),
+      ).thenAnswer((_) async => Future(() => true));
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    test('Test increment', () {
+      counter.increment();
+      expect(counter.state, 1);
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    test('Test decrement', () {
+      counter.decrement();
+      expect(counter.state, -1);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('Test save', () {
+      counter.increment();
+      counter.save();
+      verify(() => pref.setInt('counter', 1)).called(1);
+    });
+
+    test('Test load', () {
+      when(() => pref.getInt(any())).thenReturn(3);
+      counter.load();
+      expect(counter.state, 3);
+    });
   });
 }
